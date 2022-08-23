@@ -10,6 +10,7 @@ package
 	import flash.filesystem.File;
 	import flash.system.LoaderContext;
 	import flash.utils.ByteArray;
+	import flash.utils.Endian;
 	
 	public class Main extends Sprite 
 	{
@@ -55,6 +56,7 @@ package
 			bytes.position += 5;
 			
 			var contentBytes:ByteArray = new ByteArray()
+			contentBytes.endian = Endian.LITTLE_ENDIAN;
 			bytes.readBytes(contentBytes);
 			
 			if(format == "CWS")
@@ -80,9 +82,26 @@ package
 			contentBytes.position++;
 			stage.frameRate = contentBytes.readUnsignedByte();
 			
-			contentBytes.position += 10;
-			stage.color = (contentBytes.readUnsignedByte() << 16) + (contentBytes.readUnsignedByte() << 8) + contentBytes.readUnsignedByte();
-			trace(stage.color.toString(16))
+			contentBytes.position += 2;
+			
+			while(contentBytes.bytesAvailable > 0)
+			{
+				var recordHeader:uint = contentBytes.readUnsignedShort();
+				var tagCode:uint = recordHeader >> 6;
+				var bodyLength:uint = recordHeader & 0x3F;
+				
+				//SetBackgroundColor
+				if(tagCode == 9)
+				{
+					var r:uint = contentBytes.readUnsignedByte();
+					var g:uint = contentBytes.readUnsignedByte();
+					var b:uint = contentBytes.readUnsignedByte();
+					stage.color = (r << 16) + (g << 8) + b;
+					break;
+				}
+				
+				contentBytes.position += bodyLength;
+			}
 			
 			var loader:Loader = new Loader();
 			var loaderContext:LoaderContext = new LoaderContext();
