@@ -1,6 +1,8 @@
 package
 {
+	import flash.desktop.ClipboardFormats;
 	import flash.desktop.NativeApplication;
+	import flash.desktop.NativeDragManager;
 	import flash.display.Loader;
 	import flash.display.NativeWindowDisplayState;
 	import flash.display.Screen;
@@ -11,6 +13,7 @@ package
 	import flash.events.Event;
 	import flash.events.FullScreenEvent;
 	import flash.events.InvokeEvent;
+	import flash.events.NativeDragEvent;
 	import flash.events.NativeWindowBoundsEvent;
 	import flash.events.NativeWindowDisplayStateEvent;
 	import flash.filesystem.File;
@@ -26,6 +29,9 @@ package
 		private var menu:Menu;
 		private var currentWindowScale:Number;
 		
+		private var container:Sprite;
+		private var focusRect:Sprite;
+		
 		public function Main() 
 		{
 			NativeApplication.nativeApplication.addEventListener(InvokeEvent.INVOKE, onInvoke);
@@ -33,12 +39,44 @@ package
 		
 		private function onInvoke(e:InvokeEvent):void
 		{
+			stage.scaleMode = StageScaleMode.NO_SCALE;
+			stage.align = StageAlign.TOP_LEFT;
+			
+			focusRect = new Sprite();
+			focusRect.graphics.beginFill(0xFFFFFF);
+			focusRect.graphics.drawRect(0, 0, 1, 1);
+			
+			focusRect.scaleX = stage.stageWidth;
+			focusRect.scaleY = stage.stageHeight;
+			
+			addChild(focusRect);
+			
+			container = new Sprite();
+			addChild(container);
+			
 			if(e.arguments.length != 0)
 			{
 				file = new File(e.arguments[0]);
 				file.addEventListener(Event.COMPLETE, onComplete);
 				file.load();
+				return;
 			}
+			
+			var onDragEnter:Function = function(e:NativeDragEvent):void { NativeDragManager.acceptDragDrop(focusRect); };
+			
+			focusRect.addEventListener(NativeDragEvent.NATIVE_DRAG_ENTER, onDragEnter);
+			focusRect.addEventListener(NativeDragEvent.NATIVE_DRAG_DROP, function(e:NativeDragEvent):void
+			{
+				if(e.clipboard.formats[0] == ClipboardFormats.FILE_LIST_FORMAT)
+				{
+					focusRect.removeEventListener(NativeDragEvent.NATIVE_DRAG_ENTER, onDragEnter);
+					focusRect.removeEventListener(NativeDragEvent.NATIVE_DRAG_DROP, arguments.callee);
+					
+					file = e.clipboard.getData(ClipboardFormats.FILE_LIST_FORMAT)[0];
+					file.addEventListener(Event.COMPLETE, onComplete);
+					file.load();
+				}
+			});
 		}
 		
 		private function onComplete(e:Event):void
@@ -48,9 +86,6 @@ package
 			
 			stage.frameRate = swf.frameRate;
 			stage.color = swf.backgroundColor;
-			
-			stage.scaleMode = StageScaleMode.NO_SCALE;
-			stage.align = StageAlign.TOP_LEFT;
 			
 			stage.addEventListener(FullScreenEvent.FULL_SCREEN, onFullScreen);
 			stage.nativeWindow.addEventListener(NativeWindowBoundsEvent.RESIZING, onResizing);
@@ -62,7 +97,7 @@ package
 			
 			loader.contentLoaderInfo.addEventListener(Event.COMPLETE, function(e:Event):void
 			{
-				addChild(loader);
+				container.addChild(loader);
 			});
 			
 			loaderContext.allowCodeImport = true;
@@ -119,10 +154,15 @@ package
 			
 			scaleX = scaleY = Math.min(scaleX, scaleY);
 			
-			root.scaleX = scaleX / stage.contentsScaleFactor;
-			root.scaleY = scaleY / stage.contentsScaleFactor;
-			root.x = (stage.stageWidth - contentWidth * scaleX) / 2;
-			root.y = (stage.stageHeight - contentHeight * scaleY) / 2;
+			container.scaleX = scaleX / stage.contentsScaleFactor;
+			container.scaleY = scaleY / stage.contentsScaleFactor;
+			container.x = (stage.stageWidth - contentWidth * scaleX) / 2;
+			container.y = (stage.stageHeight - contentHeight * scaleY) / 2;
+			
+			focusRect.x = 0;
+			focusRect.y = 0;
+			focusRect.scaleX = stage.stageWidth;
+			focusRect.scaleY = stage.stageHeight;
 		}
 		
 		private function onFullScreen(e:FullScreenEvent):void 
