@@ -44,7 +44,7 @@ package
 			
 			focusRect = new Sprite();
 			focusRect.graphics.beginFill(0xFFFFFF);
-			focusRect.graphics.drawRect(0, 0, 1, 1);
+			focusRect.graphics.drawRect(0, 0, 1000, 1000);
 			
 			focusRect.scaleX = stage.stageWidth;
 			focusRect.scaleY = stage.stageHeight;
@@ -154,8 +154,8 @@ package
 			
 			focusRect.x = 0;
 			focusRect.y = 0;
-			focusRect.scaleX = stage.stageWidth;
-			focusRect.scaleY = stage.stageHeight;
+			focusRect.scaleX = stage.stageWidth / 1000;
+			focusRect.scaleY = stage.stageHeight / 1000;
 		}
 		
 		private function onFullScreen(e:FullScreenEvent):void 
