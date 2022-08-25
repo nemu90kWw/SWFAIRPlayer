@@ -126,15 +126,8 @@ package
 		
 		private function onResizing(e:NativeWindowBoundsEvent):void
 		{
-			// アスペクト比固定での整数倍ウィンドウ拡縮
-			var afterScaleX:Number = (e.afterBounds.width + e.beforeBounds.x - e.afterBounds.x - stage.nativeWindow.width + stage.stageWidth) / contentWidth;
-			var afterScaleY:Number = (e.afterBounds.height + e.beforeBounds.y - e.afterBounds.y - stage.nativeWindow.height + stage.stageHeight) / contentHeight;
-			var maxScale:Number = Math.min(Screen.mainScreen.visibleBounds.width / contentWidth, Screen.mainScreen.visibleBounds.height / contentHeight);
-			
-			setWindowScale(Math.min(Math.max((afterScaleX + afterScaleY) / 2, 1), maxScale));
-			
-			stage.nativeWindow.x = e.afterBounds.x;
-			stage.nativeWindow.y = e.afterBounds.y;
+			stage.nativeWindow.bounds = e.afterBounds;
+			fitScreen();
 			
 			e.preventDefault();
 		}
