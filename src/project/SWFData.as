@@ -6,16 +6,17 @@ package project
 	
 	public class SWFData 
 	{
-		public var bytes:ByteArray;
+		private var bytes:ByteArray;
+		
 		public var format:String;
 		public var version:uint;
 		public var fileLength:Number;
-		public var frameSize:Rectangle;
-		public var frameRate:Number;
+		public var frameSize:Rectangle = new Rectangle(0, 0, 550, 400);
+		public var frameRate:Number = 12;
 		public var frameCount:uint;
-		public var backgroundColor:uint;
+		public var backgroundColor:uint = 0xFFFFFF;
 		
-		public function SWFData(bytes:ByteArray)
+		public function parse(bytes:ByteArray):void
 		{
 			this.bytes = bytes;
 			bytes.endian = Endian.LITTLE_ENDIAN;

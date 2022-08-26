@@ -42,7 +42,6 @@ package
 		
 		private var menu:Menu;
 		private var focusRect:Sprite;
-		private var color:ColorTransform;
 		
 		public function Main() 
 		{
@@ -51,14 +50,15 @@ package
 		
 		private function onInvoke(e:InvokeEvent):void
 		{
-			focusRect = new Sprite();
-			focusRect.graphics.beginFill(0xFFFFFF);
-			focusRect.graphics.drawRect(0, 0, 1000, 1000);
+			swf = new SWFData();
 			
-			color = new ColorTransform(0, 0, 0, 1, 255, 255, 255, 0);
+			focusRect = new Sprite();
+			focusRect.graphics.beginFill(0);
+			focusRect.graphics.drawRect(0, 0, 1000, 1000);
+			focusRect.transform.colorTransform = new ColorTransform(0, 0, 0, 1, 255, 255, 255, 0);
 			
 			menu = new Menu(stage.nativeWindow, this);
-			menu.bounds = new Rectangle(0, 0, 550, 400);
+			menu.bounds = swf.frameSize;
 			menu.addEventListener(MenuEvent.CHANGE_SCALE, onChangeScale);
 			menu.addEventListener(MenuEvent.CHANGE_SPEED, onChangeSpeed);
 			menu.addEventListener(MenuEvent.RENDERING_STATE_CHANGE, onRenderingStateChange);
@@ -115,12 +115,12 @@ package
 		
 		private function onComplete(e:Event):void
 		{
-			swf = new SWFData(file.data);
-			menu.bounds = swf.frameSize;
+			swf.parse(file.data);
 			
 			stage.frameRate = swf.frameRate;
-			color.color = swf.backgroundColor;
-			focusRect.transform.colorTransform = color;
+			var backgroundColor:ColorTransform = new ColorTransform();
+			backgroundColor.color = swf.backgroundColor;
+			focusRect.transform.colorTransform = backgroundColor;
 			
 			setWindowScale(1);
 			
@@ -170,7 +170,7 @@ package
 		
 		private function onChangeSpeed(e:MenuEvent):void 
 		{
-			stage.frameRate = 30 * Number(e.item.name);
+			stage.frameRate = swf.frameRate * Number(e.item.name);
 		}
 		
 		private function onDisplayStateChanging(e:NativeWindowDisplayStateEvent):void 
@@ -185,12 +185,12 @@ package
 		
 		private function get contentWidth():int
 		{
-			return Math.round(menu.bounds.width / stage.contentsScaleFactor);
+			return Math.round(swf.frameSize.width / stage.contentsScaleFactor);
 		}
 		
 		private function get contentHeight():int
 		{
-			return Math.round(menu.bounds.height / stage.contentsScaleFactor);
+			return Math.round(swf.frameSize.height / stage.contentsScaleFactor);
 		}
 		
 		private function onResizing(e:NativeWindowBoundsEvent):void
@@ -230,8 +230,8 @@ package
 			}
 			
 			drawMatrix.identity();
-			drawMatrix.tx = (stage.stageWidth * stage.contentsScaleFactor / scale - menu.bounds.width) / 2;
-			drawMatrix.ty = (stage.stageHeight * stage.contentsScaleFactor / scale - menu.bounds.height) / 2;
+			drawMatrix.tx = (stage.stageWidth * stage.contentsScaleFactor / scale - swf.frameSize.width) / 2;
+			drawMatrix.ty = (stage.stageHeight * stage.contentsScaleFactor / scale - swf.frameSize.height) / 2;
 			
 			if(menu.legacyZoom == true)
 			{
