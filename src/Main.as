@@ -21,6 +21,7 @@ package
 	import flash.events.NativeWindowDisplayStateEvent;
 	import flash.filesystem.File;
 	import flash.geom.ColorTransform;
+	import flash.geom.Matrix;
 	import flash.geom.Rectangle;
 	import flash.profiler.showRedrawRegions;
 	import flash.system.LoaderContext;
@@ -36,8 +37,8 @@ package
 		private var sprite:Sprite;
 		private var bitmap:Bitmap;
 		private var buffer:BitmapData;
-		
-		private var clipRect:Rectangle = new Rectangle();
+		private var drawMatrix:Matrix;
+		private var drawColor:ColorTransform;
 		
 		private var menu:Menu;
 		private var focusRect:Sprite;
@@ -51,7 +52,7 @@ package
 		private function onInvoke(e:InvokeEvent):void
 		{
 			focusRect = new Sprite();
-			focusRect.graphics.beginFill(0);
+			focusRect.graphics.beginFill(0xFFFFFF);
 			focusRect.graphics.drawRect(0, 0, 1000, 1000);
 			
 			color = new ColorTransform(0, 0, 0, 1, 255, 255, 255, 0);
@@ -72,6 +73,8 @@ package
 			
 			buffer = new BitmapData(Screen.mainScreen.bounds.width, Screen.mainScreen.bounds.height, false, 0);
 			bitmap = new Bitmap(buffer);
+			drawMatrix = new Matrix();
+			drawColor = new ColorTransform();
 			
 			sprite = new Sprite();
 			sprite.addEventListener(Event.FRAME_CONSTRUCTED, onFrameConstructed);
@@ -137,16 +140,13 @@ package
 		{
 			if (menu.antiAliasing == true && menu.legacyZoom == false) { return; }
 			
-			clipRect.width = Math.ceil(menu.bounds.width * sprite.scaleX + sprite.x * 2)
-			clipRect.height = Math.ceil(menu.bounds.height * sprite.scaleY + sprite.y * 2);
-			
 			buffer.lock();
-			buffer.fillRect(clipRect, focusRect.transform.colorTransform.color);
+			buffer.fillRect(buffer.rect, focusRect.transform.colorTransform.color);
 			if(menu.antiAliasing == false) {
-				buffer.drawWithQuality(sprite, sprite.transform.matrix, sprite.transform.colorTransform, null, clipRect, false, StageQuality.LOW);
+				buffer.drawWithQuality(sprite, drawMatrix, drawColor, null, null, false, StageQuality.LOW);
 			}
 			else {
-				buffer.drawWithQuality(sprite, sprite.transform.matrix, sprite.transform.colorTransform, null, clipRect, false, StageQuality.BEST);
+				buffer.drawWithQuality(sprite, drawMatrix, drawColor, null, null, false, StageQuality.BEST);
 			}
 			buffer.unlock();
 		}
@@ -155,22 +155,11 @@ package
 		{
 			fitScreen();
 			
-			sprite.visible = menu.antiAliasing && !menu.legacyZoom;
-			bitmap.visible = !sprite.visible;
+			drawColor.alphaMultiplier = menu.transparent ? 0.7 : 1.0;;
+			bitmap.visible = !menu.antiAliasing || menu.legacyZoom;
+			sprite.alpha = bitmap.visible ? 0 : drawColor.alphaMultiplier;
 			
 			showRedrawRegions(menu.redrawRegions);
-			sprite.alpha = menu.transparent ? 0.7 : 1.0;
-			
-			if (menu.outsiderMode == false)
-			{
-				sprite.scrollRect = new Rectangle(0, 0, menu.bounds.width, menu.bounds.height);
-				focusRect.transform.colorTransform = color;
-			}
-			else
-			{
-				sprite.scrollRect = null;
-				focusRect.transform.colorTransform = color;
-			}
 		}
 		
 		private function onChangeScale(e:MenuEvent):void 
@@ -240,37 +229,36 @@ package
 				scale = Math.min(stage.stageWidth / contentWidth, stage.stageHeight / contentHeight);
 			}
 			
+			drawMatrix.identity();
+			drawMatrix.tx = (stage.stageWidth * stage.contentsScaleFactor / scale - menu.bounds.width) / 2;
+			drawMatrix.ty = (stage.stageHeight * stage.contentsScaleFactor / scale - menu.bounds.height) / 2;
+			
 			if(menu.legacyZoom == true)
 			{
-				sprite.scaleX = 1;
-				sprite.scaleY = 1;
 				bitmap.scaleX = scale / stage.contentsScaleFactor;
 				bitmap.scaleY = scale / stage.contentsScaleFactor;
-				sprite.x = (stage.stageWidth * stage.contentsScaleFactor / scale - menu.bounds.width) / 2;
-				sprite.y = (stage.stageHeight * stage.contentsScaleFactor / scale - menu.bounds.height) / 2;
 			}
 			else
 			{
-				if(menu.antiAliasing == false)
-				{
-					sprite.scaleX = scale;
-					sprite.scaleY = scale;
-					sprite.x = (stage.stageWidth * stage.contentsScaleFactor - menu.bounds.width * scale) / 2;
-					sprite.y = (stage.stageHeight * stage.contentsScaleFactor - menu.bounds.height * scale) / 2;
+				if(menu.antiAliasing == false) {
+					drawMatrix.scale(scale, scale);
 				}
-				else
-				{
-					sprite.scaleX = scale / stage.contentsScaleFactor;
-					sprite.scaleY = scale / stage.contentsScaleFactor;
-					sprite.x = (stage.stageWidth - contentWidth * scale) / 2;
-					sprite.y = (stage.stageHeight - contentHeight * scale) / 2;
+				else {
+					drawMatrix.scale(scale / stage.contentsScaleFactor, scale / stage.contentsScaleFactor);
 				}
 				bitmap.scaleX = 1 / stage.contentsScaleFactor;
 				bitmap.scaleY = 1 / stage.contentsScaleFactor;
 			}
 			
+			sprite.scaleX = scale / stage.contentsScaleFactor;
+			sprite.scaleY = scale / stage.contentsScaleFactor;
+			sprite.x = (stage.stageWidth - contentWidth * scale) / 2;
+			sprite.y = (stage.stageHeight - contentHeight * scale) / 2;
+			
 			focusRect.width = stage.stageWidth;
 			focusRect.height = stage.stageHeight;
+			
+			onFrameConstructed(new Event(Event.FRAME_CONSTRUCTED));
 		}
 	}
 }
