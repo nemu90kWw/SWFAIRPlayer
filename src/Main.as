@@ -52,6 +52,8 @@ package
 		
 		private function onInvoke(e:InvokeEvent):void
 		{
+			if(swf != null) { return; }
+			
 			swf = new SWFData();
 			
 			focusRect = new Sprite();
