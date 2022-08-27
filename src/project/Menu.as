@@ -119,6 +119,7 @@ package project
 			this.nativeWindow = nativeWindow;
 			
 			// ファイル
+			fileMenu.addItem(createMenuItem("開く", "O")).addEventListener(Event.SELECT, openFile);
 			fileMenu.addItem(createMenuItem("終了", "X")).addEventListener(Event.SELECT, function(e:Event):void {
 				NativeApplication.nativeApplication.exit();
 			});
@@ -179,6 +180,11 @@ package project
 		private function onFullScreen(e:FullScreenEvent):void 
 		{
 			fullScreenItem.checked = e.fullScreen;
+		}
+		
+		private function openFile(e:Event):void
+		{
+			dispatchEvent(new MenuEvent(MenuEvent.OPEN_FILE, false, false, e.target as NativeMenuItem));
 		}
 		
 		private function changeSpeed(e:Event):void

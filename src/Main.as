@@ -23,6 +23,7 @@ package
 	import flash.geom.ColorTransform;
 	import flash.geom.Matrix;
 	import flash.geom.Rectangle;
+	import flash.net.FileFilter;
 	import flash.profiler.showRedrawRegions;
 	import flash.system.LoaderContext;
 	import project.Menu;
@@ -59,6 +60,7 @@ package
 			
 			menu = new Menu(stage.nativeWindow, this);
 			menu.bounds = swf.frameSize;
+			menu.addEventListener(MenuEvent.OPEN_FILE, onOpenFile);
 			menu.addEventListener(MenuEvent.CHANGE_SCALE, onChangeScale);
 			menu.addEventListener(MenuEvent.CHANGE_SPEED, onChangeSpeed);
 			menu.addEventListener(MenuEvent.RENDERING_STATE_CHANGE, onRenderingStateChange);
@@ -90,9 +92,7 @@ package
 			
 			if(e.arguments.length != 0)
 			{
-				file = new File(e.arguments[0]);
-				file.addEventListener(Event.COMPLETE, onComplete);
-				file.load();
+				openSWF(new File(e.arguments[0]));
 				return;
 			}
 			
@@ -106,11 +106,27 @@ package
 					focusRect.removeEventListener(NativeDragEvent.NATIVE_DRAG_ENTER, onDragEnter);
 					focusRect.removeEventListener(NativeDragEvent.NATIVE_DRAG_DROP, arguments.callee);
 					
-					file = e.clipboard.getData(ClipboardFormats.FILE_LIST_FORMAT)[0];
-					file.addEventListener(Event.COMPLETE, onComplete);
-					file.load();
+					openSWF(e.clipboard.getData(ClipboardFormats.FILE_LIST_FORMAT)[0]);
 				}
 			});
+		}
+		
+		private function onOpenFile(e:Event):void
+		{
+			var selectFile:File = File.applicationDirectory;
+			selectFile.browseForOpen("Open", [new FileFilter("SWFファイル", "*.swf")]);
+			selectFile.addEventListener(Event.SELECT, function(e:Event):void
+			{
+				selectFile.removeEventListener(Event.SELECT, arguments.callee);
+				openSWF(selectFile);
+			});
+		}
+		
+		private function openSWF(file:File):void
+		{
+			this.file = file;
+			file.addEventListener(Event.COMPLETE, onComplete);
+			file.load();
 		}
 		
 		private function onComplete(e:Event):void
