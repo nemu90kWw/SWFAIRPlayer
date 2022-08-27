@@ -17,8 +17,11 @@ package project
 	{
 		private var nativeWindow:NativeWindow;
 		
-		private var menu:NativeMenu = new NativeMenu();
-		private var fileMenu:NativeMenu = new NativeMenu();
+		private var blankMenu:NativeMenu = new NativeMenu();
+		private var playerMenu:NativeMenu = new NativeMenu();
+		
+		private var blankFileMenu:NativeMenu = new NativeMenu();
+		private var playerFileMenu:NativeMenu = new NativeMenu();
 		private var displayMenu:NativeMenu = new NativeMenu();
 		private var debugMenu:NativeMenu = new NativeMenu();
 		private var speedMenu:NativeMenu = new NativeMenu();
@@ -101,7 +104,7 @@ package project
 			return new NativeMenuItem("", true);
 		}
 		
-		private function addSubMenu(submenu:NativeMenu, label:String, mnemonic:String = ""):NativeMenuItem
+		private function addSubMenu(menu:NativeMenu, submenu:NativeMenu, label:String, mnemonic:String = ""):NativeMenuItem
 		{
 			var item:NativeMenuItem = menu.addSubmenu(submenu, label);
 			
@@ -119,10 +122,12 @@ package project
 			this.nativeWindow = nativeWindow;
 			
 			// ファイル
-			fileMenu.addItem(createMenuItem("開く", "O")).addEventListener(Event.SELECT, openFile);
-			fileMenu.addItem(createMenuItem("終了", "X")).addEventListener(Event.SELECT, function(e:Event):void {
+			blankFileMenu.addItem(createMenuItem("開く", "O")).addEventListener(Event.SELECT, openFile);
+			var exit:Function = function(e:Event):void {
 				NativeApplication.nativeApplication.exit();
-			});
+			};
+			blankFileMenu.addItem(createMenuItem("終了", "X")).addEventListener(Event.SELECT, exit);
+			playerFileMenu.addItem(createMenuItem("終了", "X")).addEventListener(Event.SELECT, exit);
 			
 			// 表示
 			for (var i:int = 1; i <= 5; i++ )
@@ -166,15 +171,30 @@ package project
 			speedMenu.addEventListener(Event.SELECT, changeSpeed);
 			speedMenu.getItemByName("1.0").checked = true;
 			
-			addSubMenu(fileMenu, "ファイル", "F");
-			addSubMenu(displayMenu, "表示", "V");
-			addSubMenu(speedMenu, "倍速モード", "S");
+			addSubMenu(playerMenu, playerFileMenu, "ファイル", "F");
+			addSubMenu(playerMenu, displayMenu, "表示", "V");
+			addSubMenu(playerMenu, speedMenu, "倍速モード", "S");
+			
+			addSubMenu(blankMenu, blankFileMenu, "ファイル", "F");
+			addSubMenu(blankMenu, displayMenu, "表示", "V");
 			
 			nativeWindow.stage.addEventListener(FullScreenEvent.FULL_SCREEN, onFullScreen);
 			nativeWindow.addEventListener(NativeWindowBoundsEvent.RESIZE, onResize);
 			
-			nativeWindow.menu = menu;
 			root.contextMenu = displayMenu;
+		}
+		
+		public function setMenuType(type:String):void
+		{
+			switch(type)
+			{
+			case MenuType.BLANK:
+				nativeWindow.menu = blankMenu;
+				break;
+			case MenuType.PLAYER:
+				nativeWindow.menu = playerMenu;
+				break;
+			}
 		}
 		
 		private function onFullScreen(e:FullScreenEvent):void 

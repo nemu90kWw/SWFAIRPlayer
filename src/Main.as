@@ -28,6 +28,7 @@ package
 	import flash.system.LoaderContext;
 	import project.Menu;
 	import project.MenuEvent;
+	import project.MenuType;
 	import project.SWFData;
 	
 	public class Main extends Sprite 
@@ -109,6 +110,8 @@ package
 					openSWF(e.clipboard.getData(ClipboardFormats.FILE_LIST_FORMAT)[0]);
 				}
 			});
+			
+			menu.setMenuType(MenuType.BLANK);
 		}
 		
 		private function onOpenFile(e:Event):void
@@ -138,6 +141,7 @@ package
 			backgroundColor.color = swf.backgroundColor;
 			focusRect.transform.colorTransform = backgroundColor;
 			
+			menu.setMenuType(MenuType.PLAYER);
 			setWindowScale(1);
 			
 			var loader:Loader = new Loader();
