@@ -114,6 +114,7 @@ package
 			});
 			
 			menu.setMenuType(MenuType.BLANK);
+			stage.nativeWindow.visible = true;
 		}
 		
 		private function onOpenFile(e:Event):void
@@ -152,6 +153,7 @@ package
 			loader.contentLoaderInfo.addEventListener(Event.COMPLETE, function(e:Event):void
 			{
 				sprite.addChild(loader);
+				stage.nativeWindow.visible = true;
 			});
 			
 			loaderContext.allowCodeImport = true;
