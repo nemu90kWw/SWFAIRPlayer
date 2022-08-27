@@ -76,7 +76,12 @@ package
 			stage.nativeWindow.addEventListener(NativeWindowDisplayStateEvent.DISPLAY_STATE_CHANGING, onDisplayStateChanging);
 			stage.addEventListener(FullScreenEvent.FULL_SCREEN, onFullScreen);
 			
-			buffer = new BitmapData(Screen.mainScreen.bounds.width, Screen.mainScreen.bounds.height, false, 0);
+			var bufferBounds:Rectangle = new Rectangle();
+			for each(var screen:Screen in Screen.screens) {
+				bufferBounds = bufferBounds.union(screen.bounds);
+			}
+			
+			buffer = new BitmapData(bufferBounds.width, bufferBounds.height, false, 0);
 			bitmap = new Bitmap(buffer);
 			drawMatrix = new Matrix();
 			drawColor = new ColorTransform();
