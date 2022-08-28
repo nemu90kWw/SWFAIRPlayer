@@ -39,8 +39,7 @@ package project
 			var rectField:Array = readBits(contentBytes, [5, rectBitLength, rectBitLength, rectBitLength, rectBitLength]);
 			frameSize = new Rectangle(0, 0, rectField[2] / 20, rectField[4] / 20);
 			
-			contentBytes.position++;
-			frameRate = contentBytes.readUnsignedByte();
+			frameRate = contentBytes.readUnsignedShort() / 256;
 			frameCount = contentBytes.readUnsignedShort();
 			
 			while(contentBytes.bytesAvailable > 0)
