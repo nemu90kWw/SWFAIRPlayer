@@ -1,12 +1,12 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <application xmlns="http://ns.adobe.com/air/application/32.0">
-  <id>FlashAIRPlayer</id>
+  <id>SWFAIRPlayer</id>
   <versionNumber>1.0</versionNumber>
-  <filename>FlashAIRPlayer</filename>
-  <name>FlashAIRPlayer</name>
+  <filename>SWFAIRPlayer</filename>
+  <name>SWFAIRPlayer</name>
   <initialWindow>
-    <title>FlashAIRPlayer</title>
-    <content>FlashAIRPlayer.swf</content>
+    <title>SWFAIRPlayer</title>
+    <content>SWFAIRPlayer.swf</content>
     <systemChrome>standard</systemChrome>
     <transparent>false</transparent>
     <visible>false</visible>
