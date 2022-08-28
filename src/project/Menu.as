@@ -10,6 +10,8 @@ package project
 	import flash.events.FullScreenEvent;
 	import flash.events.NativeWindowBoundsEvent;
 	import flash.geom.Rectangle;
+	import flash.net.URLRequest;
+	import flash.net.navigateToURL;
 	import flash.ui.Keyboard;
 	import project.MenuEvent;
 
@@ -25,6 +27,7 @@ package project
 		private var displayMenu:NativeMenu = new NativeMenu();
 		private var debugMenu:NativeMenu = new NativeMenu();
 		private var speedMenu:NativeMenu = new NativeMenu();
+		private var helpMenu:NativeMenu = new NativeMenu();
 		
 		private var scaleChangeMenuItems:Vector.<NativeMenuItem> = new Vector.<NativeMenuItem>;
 		private var fullScreenItem:NativeMenuItem;
@@ -171,12 +174,19 @@ package project
 			speedMenu.addEventListener(Event.SELECT, changeSpeed);
 			speedMenu.getItemByName("1.0").checked = true;
 			
+			// ヘルプ
+			helpMenu.addItem(createMenuItem("GitHubを表示...")).addEventListener(Event.SELECT, function(e:Event):void {
+				navigateToURL(new URLRequest("https://github.com/nemu90kWw/SWFAIRPlayer"));
+			});
+			
 			addSubMenu(playerMenu, playerFileMenu, "ファイル", "F");
 			addSubMenu(playerMenu, displayMenu, "表示", "V");
 			addSubMenu(playerMenu, speedMenu, "倍速モード", "S");
+			addSubMenu(playerMenu, helpMenu, "ヘルプ", "H");
 			
 			addSubMenu(blankMenu, blankFileMenu, "ファイル", "F");
 			addSubMenu(blankMenu, displayMenu, "表示", "V");
+			addSubMenu(blankMenu, helpMenu, "ヘルプ", "H");
 			
 			nativeWindow.stage.addEventListener(FullScreenEvent.FULL_SCREEN, onFullScreen);
 			nativeWindow.addEventListener(NativeWindowBoundsEvent.RESIZE, onResize);
